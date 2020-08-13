@@ -49,6 +49,15 @@ architecture Behavioral of calc_top_module is
 		);
 	END COMPONENT;
 	
+	COMPONENT bin2bcd_10bit
+	PORT(
+		binIN : IN std_logic_vector(9 downto 0);          
+		ones : OUT std_logic_vector(3 downto 0);
+		tens : OUT std_logic_vector(3 downto 0);
+		hundreds : OUT std_logic_vector(3 downto 0)
+		);
+	END COMPONENT;
+	
 	COMPONENT seven_seg_driver
 	PORT(
 		A : IN std_logic_vector(7 downto 0);
@@ -72,9 +81,9 @@ architecture Behavioral of calc_top_module is
 	signal SSeg_B : STD_LOGIC_VECTOR(7 downto 0);
 	signal SSeg_C : STD_LOGIC_VECTOR(7 downto 0); 
 	
-	signal counter : unsigned(11 downto 0);
+	signal counter : unsigned(9 downto 0);
 	
-	constant tick_counter_limit : integer := 2000000; --counter limit before blink
+	constant tick_counter_limit : integer := 1000000; --counter limit before blink
 	signal tick_counter : unsigned (23 downto 0); -- 25 bit counter (going to 33M)
 begin
 
@@ -114,12 +123,11 @@ begin
 		Clk12Mhz => Clk
 	);
 	
-	Inst_bin2bcd_12bit: bin2bcd_12bit PORT MAP(
+	Inst_bin2bcd: bin2bcd_10bit PORT MAP(
 		binIN => std_logic_vector(counter),
 		ones => ones,
 		tens => tens,
-		hundreds => hundreds,
-		thousands => open
+		hundreds => hundreds
 	);
 
 process(Clk)
