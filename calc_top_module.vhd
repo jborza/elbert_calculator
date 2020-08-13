@@ -39,12 +39,46 @@ architecture Behavioral of calc_top_module is
 		);
 	END COMPONENT;
 	
+	COMPONENT bin2bcd_12bit
+	PORT(
+		binIN : IN std_logic_vector(11 downto 0);          
+		ones : OUT std_logic_vector(3 downto 0);
+		tens : OUT std_logic_vector(3 downto 0);
+		hundreds : OUT std_logic_vector(3 downto 0);
+		thousands : OUT std_logic_vector(3 downto 0)
+		);
+	END COMPONENT;
+	
+	COMPONENT seven_seg_driver
+	PORT(
+		A : IN std_logic_vector(7 downto 0);
+		B : IN std_logic_vector(7 downto 0);
+		C : IN std_logic_vector(7 downto 0);
+		Clk12Mhz : IN std_logic;          
+		SevenSegment : OUT std_logic_vector(7 downto 0);
+		Enable : OUT std_logic_vector(2 downto 0)
+		);
+	END COMPONENT;
+	
 	signal output_ready : STD_LOGIC;
 	signal keypad_output : STD_LOGIC_VECTOR(3 downto 0);
 	signal key_pressed : STD_LOGIC;
+	
+	signal ones : std_logic_vector(3 downto 0);
+	signal tens : std_logic_vector(3 downto 0);
+	signal hundreds : std_logic_vector(3 downto 0);
+	
+	signal SSeg_A : STD_LOGIC_VECTOR(7 downto 0);
+	signal SSeg_B : STD_LOGIC_VECTOR(7 downto 0);
+	signal SSeg_C : STD_LOGIC_VECTOR(7 downto 0); 
+	
+	signal counter : unsigned(11 downto 0);
+	
+	constant tick_counter_limit : integer := 2000000; --counter limit before blink
+	signal tick_counter : unsigned (23 downto 0); -- 25 bit counter (going to 33M)
 begin
 
-Enable <= "011";
+--Enable <= "110";
 
 -- module instances
 
@@ -58,9 +92,34 @@ Enable <= "011";
 		reset => '0'
 	);
 	
-	Inst_seven_seg_4bit: seven_seg_4bit PORT MAP(
-		Number => keypad_output,
-		SevenSegment => SevenSegment
+	Inst_seven_seg_4bit_hundreds: seven_seg_4bit PORT MAP(
+		Number => hundreds,
+		SevenSegment => SSeg_A
+	);
+	Inst_seven_seg_4bit_tens: seven_seg_4bit PORT MAP(
+		Number => tens,
+		SevenSegment => SSeg_B
+	);
+	Inst_seven_seg_4bit_ones: seven_seg_4bit PORT MAP(
+		Number => ones,
+		SevenSegment => SSeg_C
+	);
+	
+	Inst_seven_seg_driver: seven_seg_driver PORT MAP(
+		A => SSeg_A,
+		B => SSeg_B,
+		C => SSeg_C,
+		SevenSegment => SevenSegment,
+		Enable => Enable,
+		Clk12Mhz => Clk
+	);
+	
+	Inst_bin2bcd_12bit: bin2bcd_12bit PORT MAP(
+		binIN => std_logic_vector(counter),
+		ones => ones,
+		tens => tens,
+		hundreds => hundreds,
+		thousands => open
 	);
 
 process(Clk)
@@ -69,6 +128,14 @@ begin
 			--LED <= IO_P4;
 			--SevenSegment <= IO_P4;
 			LED(3 downto 0) <= keypad_output;
+			
+			if tick_counter = tick_counter_limit then
+				tick_counter <= (others => '0'); --reset the counter
+				counter <= counter + 1; --add one number
+			else
+				tick_counter <= tick_counter + 1; --increment the counter
+			end if;
+
 			
 		end if;
 end process;
