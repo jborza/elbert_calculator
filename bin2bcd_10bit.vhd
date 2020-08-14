@@ -41,7 +41,6 @@ bcd1: process(binIN)
     -- this could be optimized, we do not need to check and add 3 for the 
     -- first 3 iterations as the number can never be >4
     for i in 0 to 9 loop
-    
       if bcd(3 downto 0) > 4 then 
         bcd(3 downto 0) := bcd(3 downto 0) + 3;
       end if;
