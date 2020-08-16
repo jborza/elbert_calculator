@@ -71,7 +71,14 @@ isim/
 isim.log
 isim.cmd
 
+# isim run
+*.exe
+*.wdb
+
 fuse.log
+fuse.xmsgs
+fuse*.cmd
 
 #vhi definitions
 *.vhi
+
