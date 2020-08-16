@@ -47,7 +47,7 @@ architecture Behavioral of keypad is
     
     constant KEY_NONE : STD_LOGIC_VECTOR(3 downto 0) := "0000";
 		
-	type scanner_state_type is (scan_start, scan_c1, scan_c2, scan_c3, scan_c4);
+	type scanner_state_type is (scan_start, scan_c1, scan_c2, scan_c3, scan_c4, scan_done);
 	signal scanner_state 	: scanner_state_type;
 
 	signal key_read : STD_LOGIC_VECTOR (3 downto 0);
@@ -111,8 +111,9 @@ begin
 					when row3 => key_read <= std_logic_vector(to_unsigned(16#C#, 4));
 					when row4 => key_read <= std_logic_vector(to_unsigned(16#D#, 4));
 					when others => null;  --no key							
-				end case;
-				
+                end case;
+                scanner_state <= scan_done;
+            when scan_done =>
 				output <= key_read;
 				output_ready <= '1';
 				--output key_pressed signal if anything was pressed
