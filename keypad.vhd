@@ -14,14 +14,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx primitives in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 entity keypad is 
 	Port ( clk : in STD_LOGIC;
@@ -50,7 +43,9 @@ architecture Behavioral of keypad is
 	constant row1 : STD_LOGIC_VECTOR(3 downto 0) := "0001";	
 	constant row2 : STD_LOGIC_VECTOR(3 downto 0) := "0010";	
 	constant row3 : STD_LOGIC_VECTOR(3 downto 0) := "0100";	
-	constant row4 : STD_LOGIC_VECTOR(3 downto 0) := "1000";
+    constant row4 : STD_LOGIC_VECTOR(3 downto 0) := "1000";
+    
+    constant KEY_NONE : STD_LOGIC_VECTOR(3 downto 0) := "0000";
 		
 	type scanner_state_type is (scan_start, scan_c1, scan_c2, scan_c3, scan_c4);
 	signal scanner_state 	: scanner_state_type;
@@ -74,7 +69,7 @@ begin
 				column_pins <= col1;
 				scanner_state <= scan_c1;
 				output_ready <= '0';
-				key_read <= "0000";
+				key_read <= KEY_NONE;
 			
 			when scan_c1 => 
 				case row_pins is				
@@ -121,7 +116,7 @@ begin
 				output <= key_read;
 				output_ready <= '1';
 				--output key_pressed signal if anything was pressed
-				if (key_read = "0000") then
+				if (key_read = KEY_NONE) then
 					key_pressed <= '0';
 				else
 					key_pressed <= '1';
