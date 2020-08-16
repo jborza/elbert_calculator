@@ -8,7 +8,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity keypad_clock_divider is
     Port ( clk : in  STD_LOGIC; -- 12 MHz clock
-           clk_slow : out  STD_LOGIC);
+           clk_slow : out  STD_LOGIC); --12,000,000 Hz / 16,384 = 732 Hz
 end keypad_clock_divider;
 
 architecture Behavioral of keypad_clock_divider is
