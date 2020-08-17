@@ -150,7 +150,7 @@ begin
         case(calculator_state) is
         
             when calculator_reset =>
-                reg_arg <= to_unsigned(0, reg_arg'length);
+                reg_arg <= to_unsigned(3, reg_arg'length);
                 reg_result <= to_unsigned(0, reg_result'length);
                 current_operation <= plus;
 					 display_number <= to_unsigned(0, display_number'length);
@@ -168,14 +168,18 @@ begin
                                 calculator_state <= plus_pressed;
                             when x"F" => --# = /
                                 calculator_state <= minus_pressed;
+									 when x"A" => --??? undefined
+									 when x"B" => --??? undefined
+									 when x"D" => --??? undefined
+									 --TODO transition to digit_pressed and do reg_arg logic there
                             when others => --digit pressed (or A,B,D)
-											--reg_arg <= reg_arg + 1;
-                                --reg_arg <= reg_arg * 10 + keypad_output; --TODO fix
-                                --display_number <= keypad_output;                                
+											--do not accept new number if the current value >= 100
+											if (reg_arg < 100) then
+													reg_arg <= (reg_arg * 10) + unsigned(keypad_output);
+											end if;
+											calculator_state <= digit_pressed;
                         end case ;
-					end if;
-					--do not accept new number if the current value >= 100
-					
+					end if;					
 					
 				when digit_pressed =>
 					calculator_state <= read_digit;
