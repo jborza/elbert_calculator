@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------
--- 16 digit keypad module
+-- 16 digit keypad encoder module
 -- 
 -- 1 2 3 A
 -- 4 5 6 B
@@ -23,6 +23,7 @@ entity keypad is
 		output : out STD_LOGIC_VECTOR (3 downto 0);
 		output_ready : out STD_LOGIC;
 		key_pressed : out STD_LOGIC;
+		--key_type_digit : out STD_LOGIC; --1 for digit, 0 for special keys
 		reset : in STD_LOGIC
 		); 
 end keypad;
@@ -50,9 +51,11 @@ architecture Behavioral of keypad is
 	type scanner_state_type is (scan_start, scan_c1, scan_c2, scan_c3, scan_c4, scan_done);
 	signal scanner_state 	: scanner_state_type;
 
+	signal zero_read : STD_LOGIC;
 	signal key_read : STD_LOGIC_VECTOR (3 downto 0);
 
 	signal refresh_signal : STD_LOGIC;
+	
 begin
 	Inst_keypad_clock_divider: keypad_clock_divider PORT MAP(
 		clk => clk,
@@ -69,14 +72,15 @@ begin
 				column_pins <= col1;
 				scanner_state <= scan_c1;
 				output_ready <= '0';
+				zero_read <= '0';
 				key_read <= KEY_NONE;
 			
 			when scan_c1 => 
 				case row_pins is				
-					when row1 => key_read <= std_logic_vector(to_unsigned(1, 4));     
-					when row2 => key_read <= std_logic_vector(to_unsigned(4, 4));     
-					when row3 => key_read <= std_logic_vector(to_unsigned(7, 4));     
-					when row4 => key_read <= std_logic_vector(to_unsigned(16#E#, 4)); -- * or E
+					when row1 => key_read <= x"1"; 
+					when row2 => key_read <= x"4"; 
+					when row3 => key_read <= x"7"; 
+					when row4 => key_read <= x"e"; --* or E
 					when others => null;  --no key							
 				end case;
 				column_pins <= col2;
@@ -84,10 +88,11 @@ begin
 			
 			when scan_c2 => 
 				case row_pins is				
-					when row1 => key_read <= std_logic_vector(to_unsigned(2, 4));
-					when row2 => key_read <= std_logic_vector(to_unsigned(5, 4)); 
-					when row3 => key_read <= std_logic_vector(to_unsigned(8, 4));
-					when row4 => key_read <= std_logic_vector(to_unsigned(0, 4));
+					when row1 => key_read <= x"2";
+					when row2 => key_read <= x"5";
+					when row3 => key_read <= x"8";
+					when row4 => key_read <= x"0";
+						zero_read <= '1'; --special flag to let us know we read zero
 					when others => null;  --no key							
 				end case;			
 				column_pins <= col3;
@@ -95,10 +100,10 @@ begin
 			
 			when scan_c3 => 
 				case row_pins is				
-					when row1 => key_read <= std_logic_vector(to_unsigned(3, 4));
-					when row2 => key_read <= std_logic_vector(to_unsigned(6, 4)); 
-					when row3 => key_read <= std_logic_vector(to_unsigned(9, 4)); 
-					when row4 => key_read <= std_logic_vector(to_unsigned(16#F#, 4)); -- # or F
+					when row1 => key_read <= x"3";
+					when row2 => key_read <= x"6";
+					when row3 => key_read <= x"9";
+					when row4 => key_read <= x"f"; -- # or F
 					when others => null;  --no key							
 				end case;
 				column_pins <= col4;
@@ -106,18 +111,18 @@ begin
 			
 			when scan_c4 => 
 				case row_pins is				
-					when row1 => key_read <= std_logic_vector(to_unsigned(16#A#, 4));
-					when row2 => key_read <= std_logic_vector(to_unsigned(16#B#, 4));
-					when row3 => key_read <= std_logic_vector(to_unsigned(16#C#, 4));
-					when row4 => key_read <= std_logic_vector(to_unsigned(16#D#, 4));
+					when row1 => key_read <= x"a";
+					when row2 => key_read <= x"b";
+					when row3 => key_read <= x"c";
+					when row4 => key_read <= x"d";
 					when others => null;  --no key							
                 end case;
                 scanner_state <= scan_done;
-            when scan_done =>
+			when scan_done =>
 				output <= key_read;
 				output_ready <= '1';
 				--output key_pressed signal if anything was pressed
-				if (key_read = KEY_NONE) then
+				if (key_read = KEY_NONE and zero_read = '0') then
 					key_pressed <= '0';
 				else
 					key_pressed <= '1';
