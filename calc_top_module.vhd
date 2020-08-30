@@ -20,10 +20,13 @@ entity calc_top_module is
 end calc_top_module;
 
 architecture Behavioral of calc_top_module is
-	COMPONENT keypad
+	
+		
+	COMPONENT keypad_driver
 	PORT(
 		clk : IN std_logic;
 		row_pins : IN std_logic_vector(3 downto 0);
+		clear : IN std_logic;
 		reset : IN std_logic;          
 		column_pins : OUT std_logic_vector(3 downto 0);
 		output : OUT std_logic_vector(3 downto 0);
@@ -69,9 +72,14 @@ architecture Behavioral of calc_top_module is
 		);
 	END COMPONENT;
 	
-	signal output_ready : STD_LOGIC;
+	--keypad wiring
+	signal keypad_output_ready : STD_LOGIC;
+	signal keypad_poller_clear : STD_LOGIC;
+--	signal output_ready : STD_LOGIC;
 	signal keypad_output : STD_LOGIC_VECTOR(3 downto 0);
-	signal key_pressed : STD_LOGIC;
+--	signal keypad_poller_output : STD_LOGIC_VECTOR(3 downto 0);
+--	signal key_pressed : STD_LOGIC;
+	signal keypad_key_pressed : STD_LOGIC;
 	
 	signal ones : std_logic_vector(3 downto 0);
 	signal tens : std_logic_vector(3 downto 0);
@@ -81,15 +89,8 @@ architecture Behavioral of calc_top_module is
 	signal SSeg_B : STD_LOGIC_VECTOR(7 downto 0);
 	signal SSeg_C : STD_LOGIC_VECTOR(7 downto 0); 
 	
-	--signal counter : unsigned(9 downto 0);
-	
-	--constant tick_counter_limit : integer := 1000000; --counter limit before number is incremented
-	--signal tick_counter : unsigned (23 downto 0); -- 25 bit counter (going to 33M)
-	
-	
-    
     --calculator internals
-	type calculator_state_type is (calculator_reset, read_digit, digit_pressed, plus_pressed, minus_pressed, calculate, display_result);
+	 type calculator_state_type is (calculator_reset, read_digit, digit_pressed, plus_pressed, minus_pressed, calculate, display_result, halt_deleteme);
     type operation_type is (plus, minus);
     
     signal calculator_state : calculator_state_type;
@@ -103,13 +104,24 @@ architecture Behavioral of calc_top_module is
 	 signal calculator_state_pos : integer;
 begin
 -- module instances
-	Inst_keypad: keypad PORT MAP(
+--	Inst_keypad: keypad PORT MAP(
+--		clk => Clk,
+--		row_pins => IO_P4_ROW,
+--		column_pins => IO_P4_COL,
+--		output => keypad_output,
+--		output_ready => keypad_output_ready,
+--		key_pressed => keypad_key_pressed,
+--		reset => reset
+--	);
+
+	Inst_keypad_driver: keypad_driver PORT MAP(
 		clk => Clk,
 		row_pins => IO_P4_ROW,
 		column_pins => IO_P4_COL,
 		output => keypad_output,
-		output_ready => output_ready,
-		key_pressed => key_pressed,
+		output_ready => keypad_output_ready,
+		key_pressed => keypad_key_pressed,
+		clear => keypad_poller_clear,
 		reset => reset
 	);
 	
@@ -157,10 +169,11 @@ begin
 					 calculator_state <= read_digit;
 
 				when read_digit => 
+					keypad_poller_clear <= '0';
 					display_number <= reg_arg;
 					--decide based on what was pressed
 					--TODO clear the keypad
-					if key_pressed = '1' then
+					if keypad_output_ready = '1' then
 						case( keypad_output ) is
                             when x"C" => --C as clear
                                 calculator_state <= calculator_reset;
@@ -173,16 +186,18 @@ begin
 									 when x"D" => --??? undefined
 									 --TODO transition to digit_pressed and do reg_arg logic there
                             when others => --digit pressed (or A,B,D)
-											--do not accept new number if the current value >= 100
-											if (reg_arg < 100) then
-													reg_arg <= (reg_arg * 10) + unsigned(keypad_output);
-											end if;
 											calculator_state <= digit_pressed;
                         end case ;
 					end if;					
 					
 				when digit_pressed =>
-					calculator_state <= read_digit;
+					--do not accept new number if the current value >= 100
+					if (reg_arg < 100) then
+							reg_arg <= (reg_arg * 10) + unsigned(keypad_output);
+					end if;
+					--keypad_poller_clear <= '1';
+					--calculator_state <= read_digit;
+					calculator_state <= halt_deleteme;
 				when plus_pressed =>
 					next_operation <= plus;
 					calculator_state <= calculate;
@@ -218,7 +233,12 @@ begin
 			LED(3) <= keypad_output(0);
 			
 			calculator_state_pos <= calculator_state_type'POS(calculator_state);
-			LED(7 downto 4) <= std_logic_vector(to_unsigned(calculator_state_pos, 4));
+			--LED(7 downto 4) <= std_logic_vector(to_unsigned(calculator_state_pos, 4));
+			
+			LED(4) <= '0';
+			LED(5) <= '0';
+			LED(7) <= keypad_key_pressed;
+			LED(6) <= keypad_output_ready;
 			
 			-- if tick_counter = tick_counter_limit then
 			-- 	tick_counter <= (others => '0'); --reset the counter

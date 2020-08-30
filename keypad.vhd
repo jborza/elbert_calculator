@@ -16,7 +16,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 use IEEE.NUMERIC_STD.ALL;
 
-entity keypad is 
+entity keypad_decoder is 
 	Port ( clk : in STD_LOGIC;
 		row_pins : in  STD_LOGIC_VECTOR (3 downto 0);
 		column_pins : out STD_LOGIC_VECTOR (3 downto 0); --with PULLUP
@@ -26,15 +26,10 @@ entity keypad is
 		--key_type_digit : out STD_LOGIC; --1 for digit, 0 for special keys
 		reset : in STD_LOGIC
 		); 
-end keypad;
+end keypad_decoder;
 
-architecture Behavioral of keypad is
-	COMPONENT keypad_clock_divider
-	PORT(
-		clk : IN std_logic;          
-		clk_slow : OUT std_logic
-		);
-	END COMPONENT;
+architecture Behavioral of keypad_decoder is
+
 	
 	constant col1 : STD_LOGIC_VECTOR(3 downto 0) := "0001";	
 	constant col2 : STD_LOGIC_VECTOR(3 downto 0) := "0010";	
@@ -54,19 +49,16 @@ architecture Behavioral of keypad is
 	signal zero_read : STD_LOGIC;
 	signal key_read : STD_LOGIC_VECTOR (3 downto 0);
 
-	signal refresh_signal : STD_LOGIC;
+	
 	
 begin
-	Inst_keypad_clock_divider: keypad_clock_divider PORT MAP(
-		clk => clk,
-		clk_slow => refresh_signal
-	);
+
 	--strobe the columns sequentially
-process(refresh_signal, reset)
+process(clk, reset)
 begin
 	if reset = '1' then
 		scanner_state <= scan_start;
-	elsif rising_edge(refresh_signal) then
+	elsif rising_edge(clk) then
 		case scanner_state is
 			when scan_start =>
 				column_pins <= col1;
