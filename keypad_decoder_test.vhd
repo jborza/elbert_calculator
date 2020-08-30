@@ -59,17 +59,58 @@
 	  -- Stimulus process
    stim_proc: process
    begin		
-      -- hold reset state for 100 ns.
-      wait for 100 ns;	
-
-      wait for clk_period*10;
+      -- hold reset state 
+      wait for 10 ns;	
 
       -- insert stimulus here 
 		column_pins <= "1000";
 		row_pins <= "1000";
-		wait for clk_period;
+		wait for clk_period*4;
 		
-		wait for clk_period;
+		column_pins <= "0001";
+		row_pins <= "0001";		
+		wait for clk_period*4;
+
+		column_pins <= "0001";
+		row_pins <= "0010";		
+		wait for clk_period*4;
+
+		column_pins <= "0001";
+		row_pins <= "0100";		
+		wait for clk_period*4;
+
+		column_pins <= "0001";
+		row_pins <= "1000";		
+		wait for clk_period*4;
+
+		column_pins <= "0001";
+		row_pins <= "1000";		
+		wait for clk_period*4;
+
+		column_pins <= "0010";
+		row_pins <= "0000";		
+		wait for clk_period * 4;
+		
+		column_pins <= "0010";
+		row_pins <= "1000";		
+		wait for clk_period*4;
+		
+		column_pins <= "0010";
+		row_pins <= "0100";		
+		wait for clk_period*4;
+
+		column_pins <= "0010";
+		row_pins <= "0010";		
+		wait for clk_period*4;
+
+		column_pins <= "0010";
+		row_pins <= "0001";		
+		wait for clk_period*4;
+		
+		
+		column_pins <= "0010";
+		row_pins <= "0000";		
+		wait for clk_period*4;
 		
 	 wait;
    end process;

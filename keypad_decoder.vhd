@@ -39,58 +39,56 @@ architecture Behavioral of keypad_decoder is
    constant row4 : STD_LOGIC_VECTOR(3 downto 0) := "1000";
    
    constant KEY_NONE : STD_LOGIC_VECTOR(3 downto 0) := "0000";
-	
-	signal zero_read : STD_LOGIC;
-	signal key_read : STD_LOGIC_VECTOR (3 downto 0);
-begin
 
-	--strobe the columns sequentially
+begin
 process(clk, reset)
+	variable key_read : STD_LOGIC_VECTOR(3 downto 0) := KEY_NONE;
+	variable valid_key : STD_LOGIC := '0';
 begin
 	if reset = '1' then
 		keycode_output <= KEY_NONE;
 		is_key_pressed <= '0';
 	elsif rising_edge(clk) then
+		valid_key := '1';
 		case column_pins is
 			when col1 => 
 				case row_pins is				
-					when row1 => key_read <= x"1"; 
-					when row2 => key_read <= x"4"; 
-					when row3 => key_read <= x"7"; 
-					when row4 => key_read <= x"e"; --* or E
-					when others => null;  --no key							
+					when row1 => key_read := x"1"; 
+					when row2 => key_read := x"4"; 
+					when row3 => key_read := x"7"; 
+					when row4 => key_read := x"e"; --* or E
+					when others => key_read := KEY_NONE; valid_key := '0';  --no key							
 				end case;
 			when col2 => 
 				case row_pins is				
-					when row1 => key_read <= x"2";
-					when row2 => key_read <= x"5";
-					when row3 => key_read <= x"8";
-					when row4 => key_read <= x"0";
-						zero_read <= '1'; --special flag to let us know we read zero
-					when others => null;  --no key							
+					when row1 => key_read := x"2";
+					when row2 => key_read := x"5";
+					when row3 => key_read := x"8";
+					when row4 => key_read := x"0";
+					when others => key_read := KEY_NONE; valid_key := '0'; --no key							
 				end case;			
 			when col3 => 
 				case row_pins is				
-					when row1 => key_read <= x"3";
-					when row2 => key_read <= x"6";
-					when row3 => key_read <= x"9";
-					when row4 => key_read <= x"f"; -- # or F
-					when others => null;  --no key							
+					when row1 => key_read := x"3";
+					when row2 => key_read := x"6";
+					when row3 => key_read := x"9";
+					when row4 => key_read := x"f"; -- # or F
+					when others => key_read := KEY_NONE; valid_key := '0';  --no key							
 				end case;
 			when col4 => 
 				case row_pins is				
-					when row1 => key_read <= x"a";
-					when row2 => key_read <= x"b";
-					when row3 => key_read <= x"c";
-					when row4 => key_read <= x"d";
-					when others => null;  --no key							
+					when row1 => key_read := x"a";
+					when row2 => key_read := x"b";
+					when row3 => key_read := x"c";
+					when row4 => key_read := x"d";
+					when others => key_read := KEY_NONE; valid_key := '0'; --no key							
 				end case;
 			when others =>
 				keycode_output <= KEY_NONE;
 				is_key_pressed <= '0';
 		end case;
 		
-		if (key_read = KEY_NONE and zero_read = '0') then
+		if (valid_key = '0') then
 			is_key_pressed <= '0';
 			keycode_output <= KEY_NONE;
 		else
