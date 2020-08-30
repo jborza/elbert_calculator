@@ -17,8 +17,10 @@ architecture Behavioral of keypad_row_synchronizer is
 begin
 	process(clk) 
 	begin
-		reg1 <= reg0;
-		reg0 <= row_pins_async;
+		if rising_edge(clk) then
+			reg1 <= reg0;
+			reg0 <= row_pins_async;
+		end if;
 	end process;
 	-- connect the output to the last register
 	row_out_sync <= reg1;
