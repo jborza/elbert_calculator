@@ -59,59 +59,72 @@
 	  -- Stimulus process
    stim_proc: process
    begin		
-      -- hold reset state 
-      wait for 10 ns;	
+        -- hold reset state 
+        wait for 10 ns;	
 
-      -- insert stimulus here 
-		column_pins <= "1000";
-		row_pins <= "1000";
-		wait for clk_period*4;
-		
-		column_pins <= "0001";
-		row_pins <= "0001";		
-		wait for clk_period*4;
+        -- insert stimulus here 		
+        column_pins <= "0001";
+        row_pins <= "0001";		
+        wait for clk_period*4;
+        assert (is_key_pressed='1') report "is_key_pressed should be 1" severity failure;
+        assert (keycode_output=x"1") report "output should be 1" severity failure;
 
-		column_pins <= "0001";
-		row_pins <= "0010";		
-		wait for clk_period*4;
+        column_pins <= "0001";
+        row_pins <= "0010";		
+        wait for clk_period*4;
+        assert (is_key_pressed='1') report "is_key_pressed should be 1" severity failure;
+        assert (keycode_output=x"4") report "output should be 4" severity failure;
 
-		column_pins <= "0001";
-		row_pins <= "0100";		
-		wait for clk_period*4;
+        column_pins <= "0001";
+        row_pins <= "0100";		
+        wait for clk_period*4;
+        assert (is_key_pressed='1') report "is_key_pressed should be 1" severity failure;
+        assert (keycode_output=x"7") report "output should be 4" severity failure;
 
-		column_pins <= "0001";
-		row_pins <= "1000";		
-		wait for clk_period*4;
+        column_pins <= "0001";
+        row_pins <= "1000";		
+        wait for clk_period*4;
+        assert (is_key_pressed='1') report "is_key_pressed should be 1" severity failure;
+        assert (keycode_output=x"e") report "output should be 4" severity failure;
 
-		column_pins <= "0001";
-		row_pins <= "1000";		
-		wait for clk_period*4;
+        column_pins <= "0010";
+        row_pins <= "0000";		
+        wait for clk_period * 4;
+        assert (is_key_pressed='0') report "is_key_pressed should be 0" severity failure;
+        assert (keycode_output=x"0") report "output should be 0" severity failure;
 
-		column_pins <= "0010";
-		row_pins <= "0000";		
-		wait for clk_period * 4;
-		
-		column_pins <= "0010";
-		row_pins <= "1000";		
-		wait for clk_period*4;
-		
-		column_pins <= "0010";
-		row_pins <= "0100";		
-		wait for clk_period*4;
+        column_pins <= "0010";
+        row_pins <= "1000";		
+        wait for clk_period*4;
+        assert (is_key_pressed='1') report "is_key_pressed should be 1" severity failure;
+        assert (keycode_output=x"0") report "output should be 0" severity failure;
 
-		column_pins <= "0010";
-		row_pins <= "0010";		
-		wait for clk_period*4;
+        column_pins <= "0010";
+        row_pins <= "0100";		
+        wait for clk_period*4;
+        assert (is_key_pressed='1') report "is_key_pressed should be 1" severity failure;
+        assert (keycode_output=x"8") report "output should be 8" severity failure;
 
-		column_pins <= "0010";
-		row_pins <= "0001";		
-		wait for clk_period*4;
-		
-		
-		column_pins <= "0010";
-		row_pins <= "0000";		
-		wait for clk_period*4;
-		
-	 wait;
+        column_pins <= "0010";
+        row_pins <= "0010";		
+        wait for clk_period*4;
+        assert (is_key_pressed='1') report "is_key_pressed should be 1" severity failure;
+        assert (keycode_output=x"5") report "output should be 5" severity failure;
+
+        column_pins <= "0010";
+        row_pins <= "0001";		
+        wait for clk_period*4;
+        assert (is_key_pressed='1') report "is_key_pressed should be 1" severity failure;
+        assert (keycode_output=x"2") report "output should be 2" severity failure;
+
+
+        column_pins <= "0010";
+        row_pins <= "0000";		
+        wait for clk_period*4;
+        assert (is_key_pressed='0') report "is_key_pressed should be 1" severity failure;
+        assert (keycode_output=x"0") report "output should be 0" severity failure;
+
+        assert false report "Test done." severity note;
+	    wait;
    end process;
   END;
