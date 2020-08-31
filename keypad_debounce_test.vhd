@@ -44,13 +44,15 @@ ARCHITECTURE behavior OF keypad_debounce_test IS
          clk : IN  std_logic;
          key_pressed_in : IN  std_logic_vector(3 downto 0);
          key_pressed_debounced : OUT  std_logic_vector(3 downto 0);
-			output_stable : OUT std_logic
+			output_stable : OUT std_logic;
+			reset : IN std_logic
         );
     END COMPONENT;
     
 
    --Inputs
    signal clk : std_logic := '0';
+	signal reset : std_logic := '1';
    signal key_pressed_in : std_logic_vector(3 downto 0) := (others => '0');
 
  	--Outputs
@@ -67,7 +69,8 @@ BEGIN
           clk => clk,
           key_pressed_in => key_pressed_in,
           key_pressed_debounced => key_pressed_debounced,
-			 output_stable => output_stable
+			 output_stable => output_stable,
+			 reset => reset
         );
 
    -- Clock process definitions
@@ -84,9 +87,11 @@ BEGIN
    stim_proc: process
    begin		
       -- hold reset state for 100 ns.
+		reset <= '1';
       wait for 100 ns;	
 
-      wait for clk_period*10;
+      --wait for clk_period*10;
+		reset <= '0';
 
       -- insert stimulus here 
 		key_pressed_in <= "0101";
