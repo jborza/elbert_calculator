@@ -88,6 +88,8 @@ architecture Behavioral of top_module_playground is
 	
 	signal ones : std_logic_vector(3 downto 0);
 	
+	signal is_key_pressed : std_logic;
+	
 begin
 
 	Inst_keypad_debounce: keypad_debounce PORT MAP(
@@ -109,7 +111,7 @@ begin
 		row_pins => keypad_rows_read,
 		column_pins => column_pins,
 		keycode_output => keypad_decoder_out, --LED(3 downto 0),
-		is_key_pressed => LED(6),
+		is_key_pressed => is_key_pressed,
 		reset => reset
 	);
 	
@@ -153,8 +155,8 @@ begin
 				when scan_start =>
 					column_pins <= col1;
 					scanner_state <= scan_c1;
-					debounce_reset <= '1';
-					ones <= x"0";
+					debounce_reset <= '1';					
+					ones <= x"0";				
 				when scan_c1 => 
 					ones <= x"1";
 					debounce_reset <= '0';
@@ -207,15 +209,16 @@ begin
 							scanner_state <= scan_done;
 						else
 							--transition back to beginning
-							column_pins <= col1;
 							scanner_state <= scan_start;
-							debounce_reset <= '1';
+							keypad_rows_read <= "0000";
 						end if;
 					end if;
 				when scan_done =>
 					ones <= x"5";
-					--display the number
-					keypad_out <= keypad_decoder_out;
+					--display the number					
+					--if is_key_pressed = '1' then
+						keypad_out <= keypad_decoder_out;
+					--end if;
 					scanner_state <= scan_start;
 			end case;
 			--ones <= std_logic_vector(to_unsigned(scanner_state, 8));
@@ -224,14 +227,21 @@ begin
 	
 	Enable <= "110";
 	
-	
+	IO_P4_COL <= column_pins;
 	--SevenSegment <= "00000000";
 	LED(3 downto 0) <= keypad_out;
-	LED(4) <= debounce_reset;
-	LED(5) <= reset;
-	LED(7) <= keypad_row_stable;
+	--LED(4) <= debounce_reset;
+	--LED(5) <= reset;
+	--LED(7) <= keypad_row_stable;
 	--LED(6) <= reset;
-	IO_P4_COL <= column_pins;
+	
+	
+	--LED(7 downto 4) <= rows_sync;
+	LED(7) <= is_key_pressed;
+	LED(6) <= keypad_row_stable;
+	LED(5) <= '0';
+	LED(4) <= '0';
+	
 
 end Behavioral;
 
