@@ -84,3 +84,5 @@ fuse*.cmd
 
 # we don't really need any log files in the repo
 *.log
+
+netgen/*
